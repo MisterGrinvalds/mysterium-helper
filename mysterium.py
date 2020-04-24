@@ -174,7 +174,9 @@ class Hand(CardPool):
             self.discard_card(self.cards[0])
 
     def show_hand(self):
-        print("{} : {}".format(self.name, self.cards))
+        print("\nVision Cards in Hand:")
+        for index in range(len(self.cards)):
+            print("[{}] {}".format(index, self.cards[index]))
 
     def use_raven(self):
         self.discard_hand()
@@ -265,30 +267,53 @@ class Game:
         self.empty_hand(hand)
         self.copy_hand(hand)
 
+    def prompt_discard_card(self, hand: Hand):
+        if len(hand.cards) > 0:
+            hand.show_hand()
+            selection = -1
+            while selection not in [str(number) for number in range(len(hand.cards))]:
+                selection = input("Which card would you like to discard? ")
+                if selection in self.settings.exit_queues:
+                    break
+            hand.discard_card(hand.cards[int(selection)])
+
     def setup_game(self):
         self.make_game_folders()
         self.copy_game_setup()
 
     def prompt(self):
+        self.selected_cards["visions"].show_hand()
         selection = 0
         while selection != -1:
             selection = input(
                 """
                 [1] Delete Current Hand
-                [2] Restore Current Hand
-                [3] Replenish Hand
-                [4] Show Settings
+                [2] Refresh Cards in Folder
+                [3] Show Hand
+                [4] Discard Card
+                [5] Replenish Hand
+                [6] Show Settings
                 [q] Exit Game
                 """
             )
             if selection == "1":
+                self.selected_cards["visions"].discard_hand()
                 self.empty_hand(self.selected_cards["visions"])
+                self.refresh_hand(self.selected_cards["visions"])
             elif selection == "2":
                 self.refresh_hand(self.selected_cards["visions"])
+                self.selected_cards["visions"].show_hand()
             elif selection == "3":
-                self.selected_cards["visions"].use_raven()
-                self.refresh_hand(self.selected_cards["visions"])
+                self.selected_cards["visions"].show_hand()
             elif selection == "4":
+                self.prompt_discard_card(self.selected_cards["visions"])
+                self.refresh_hand(self.selected_cards["visions"])
+                self.selected_cards["visions"].show_hand()
+            elif selection == "5":
+                self.selected_cards["visions"].draw_hand()
+                self.refresh_hand(self.selected_cards["visions"])
+                self.selected_cards["visions"].show_hand()
+            elif selection == "6":
                 self.settings.show_settings()
             elif selection in self.settings.exit_queues:
                 break
